@@ -21,6 +21,9 @@ const initializeSocket = require('./socket/socketHandler');
 const app = express();
 const server = http.createServer(app);
 
+// Trust proxy - Required for Render/Heroku deployments
+app.set('trust proxy', 1);
+
 // Initialize Socket.io
 const io = new Server(server, {
       cors: {
