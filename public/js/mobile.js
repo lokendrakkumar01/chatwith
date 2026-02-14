@@ -1,0 +1,55 @@
+// Mobile menu toggle functionality
+document.addEventListener('DOMContentLoaded', () => {
+      // Only add mobile menu on mobile devices
+      if (window.innerWidth <= 768) {
+            const chatContainer = document.querySelector('.chat-container');
+            const sidebar = document.querySelector('.sidebar');
+
+            if (chatContainer && sidebar) {
+                  // Create mobile menu toggle button
+                  const toggleBtn = document.createElement('button');
+                  toggleBtn.className = 'mobile-menu-toggle';
+                  toggleBtn.innerHTML = '👥';
+                  toggleBtn.setAttribute('aria-label', 'Toggle user list');
+
+                  // Add to chat container
+                  chatContainer.appendChild(toggleBtn);
+
+                  // Toggle sidebar
+                  toggleBtn.addEventListener('click', () => {
+                        sidebar.classList.toggle('active');
+                        toggleBtn.innerHTML = sidebar.classList.contains('active') ? '✕' : '👥';
+                  });
+
+                  // Close sidebar when clicking on a user
+                  const userItems = document.querySelectorAll('.user-item');
+                  userItems.forEach(item => {
+                        item.addEventListener('click', () => {
+                              if (window.innerWidth <= 768) {
+                                    sidebar.classList.remove('active');
+                                    toggleBtn.innerHTML = '👥';
+                              }
+                        });
+                  });
+
+                  // Close sidebar when clicking outside
+                  document.addEventListener('click', (e) => {
+                        if (window.innerWidth <= 768 &&
+                              sidebar.classList.contains('active') &&
+                              !sidebar.contains(e.target) &&
+                              !toggleBtn.contains(e.target)) {
+                              sidebar.classList.remove('active');
+                              toggleBtn.innerHTML = '👥';
+                        }
+                  });
+            }
+      }
+
+      // Add viewport meta tag if not present
+      if (!document.querySelector('meta[name="viewport"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            document.head.appendChild(meta);
+      }
+});
