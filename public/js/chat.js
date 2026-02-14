@@ -388,6 +388,11 @@ logoutBtn.addEventListener('click', () => {
       }
 });
 
+// Settings  
+settingsBtn.addEventListener('click', () => {
+      window.location.href = '/settings.html';
+});
+
 // Error Handler
 socket.on('error', (error) => {
       console.error('Socket error:', error);
