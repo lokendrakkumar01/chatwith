@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatWith - Messages</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="user-profile">
+          <img id="currentUserAvatar" class="avatar" src="" alt="Profile">
+          <div class="user-info">
+            <h3 id="currentUsername">Loading...</h3>
+            <span class="status online">Online</span>
+          </div>
+        </div>
+        <button id="logoutBtn" class="icon-btn" title="Logout">
+          <span>🚪</span>
+        </button>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="userSearch" placeholder="Search users..." />
+      </div>
+
+      <div class="user-list" id="userList">
+        <div class="loading-users">
+          <div class="spinner"></div>
+          <p>Loading users...</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="chat-main">
+      <div class="chat-welcome" id="chatWelcome">
+        <div class="welcome-content">
+          <span class="welcome-icon">💬</span>
+          <h2>Welcome to ChatWith</h2>
+          <p>Select a user from the sidebar to start chatting</p>
+        </div>
+      </div>
+
+      <div class="chat-window" id="chatWindow" style="display: none;">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="chat-user">
+            <img id="chatUserAvatar" class="avatar" src="" alt="User">
+            <div class="chat-user-info">
+              <h3 id="chatUsername">Username</h3>
+              <span id="chatUserStatus" class="user-status">Offline</span>
+              <span id="typingIndicator" class="typing-indicator" style="display: none;">
+                typing...
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div class="messages-container" id="messagesContainer">
+          <button id="loadMoreBtn" class="load-more-btn" style="display: none;">
+            Load Earlier Messages
+          </button>
+          <div class="messages" id="messages">
+            <!-- Messages will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-container">
+          <form id="messageForm" class="message-form">
+            <textarea 
+              id="messageInput" 
+              placeholder="Type a message..." 
+              rows="1"
+              maxlength="5000"
+            ></textarea>
+            <button type="submit" class="send-btn" id="sendBtn" disabled>
+              <span>📤</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Socket.io Client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/chat.js"></script>
+</body>
+</html>

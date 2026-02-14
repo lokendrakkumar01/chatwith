@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatWith - Secure Real-Time Messaging</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo">
+          <span class="logo-icon">💬</span>
+          <h1>ChatWith</h1>
+        </div>
+        <p class="tagline">Connect instantly, chat securely</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form active">
+        <h2>Welcome Back</h2>
+        
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input 
+            type="email" 
+            id="loginEmail" 
+            placeholder="your@email.com" 
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            placeholder="Enter your password" 
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <div id="loginError" class="error-message"></div>
+
+        <button type="submit" class="btn btn-primary">
+          <span class="btn-text">Login</span>
+          <span class="btn-loader"></span>
+        </button>
+
+        <p class="toggle-form">
+          Don't have an account? 
+          <a href="#" id="showSignup">Sign up</a>
+        </p>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="auth-form">
+        <h2>Create Account</h2>
+        
+        <div class="form-group">
+          <label for="signupUsername">Username</label>
+          <input 
+            type="text" 
+            id="signupUsername" 
+            placeholder="Choose a username" 
+            required
+            autocomplete="username"
+            minlength="3"
+            maxlength="30"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="signupEmail">Email</label>
+          <input 
+            type="email" 
+            id="signupEmail" 
+            placeholder="your@email.com" 
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input 
+            type="password" 
+            id="signupPassword" 
+            placeholder="At least 6 characters" 
+            required
+            autocomplete="new-password"
+            minlength="6"
+          >
+        </div>
+
+        <div id="signupError" class="error-message"></div>
+
+        <button type="submit" class="btn btn-primary">
+          <span class="btn-text">Sign Up</span>
+          <span class="btn-loader"></span>
+        </button>
+
+        <p class="toggle-form">
+          Already have an account? 
+          <a href="#" id="showLogin">Login</a>
+        </p>
+      </form>
+    </div>
+
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>
