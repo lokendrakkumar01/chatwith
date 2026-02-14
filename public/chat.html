@@ -1,26 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatWith - Messages</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
   <div class="chat-container">
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="user-profile">
-          <img id="currentUserAvatar" class="avatar" src="" alt="Profile">
+          <div class="avatar-container" style="position: relative; cursor: pointer;" id="avatarContainer"
+            title="Click to change profile photo">
+            <img id="currentUserAvatar" class="avatar" src="" alt="Profile">
+            <div class="avatar-overlay">
+              <span>📷</span>
+            </div>
+          </div>
+          <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
           <div class="user-info">
             <h3 id="currentUsername">Loading...</h3>
             <span class="status online">Online</span>
           </div>
         </div>
-        <button id="logoutBtn" class="icon-btn" title="Logout">
-          <span>🚪</span>
-        </button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="settingsBtn" class="icon-btn" title="Settings">
+            <span>⚙️</span>
+          </button>
+          <button id="logoutBtn" class="icon-btn" title="Logout">
+            <span>🚪</span>
+          </button>
+        </div>
       </div>
 
       <div class="search-box">
@@ -73,12 +87,19 @@
         <!-- Message Input -->
         <div class="message-input-container">
           <form id="messageForm" class="message-form">
-            <textarea 
-              id="messageInput" 
-              placeholder="Type a message..." 
-              rows="1"
-              maxlength="5000"
-            ></textarea>
+            <input type="file" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx" style="display: none;">
+            <button type="button" id="attachBtn" class="attach-btn" title="Attach file">
+              <span>📎</span>
+            </button>
+            <div class="input-wrapper">
+              <div id="filePreview" class="file-preview" style="display: none;">
+                <div class="file-preview-content">
+                  <span id="fileName"></span>
+                  <button type="button" id="removeFile" class="remove-file">✕</button>
+                </div>
+              </div>
+              <textarea id="messageInput" placeholder="Type a message..." rows="1" maxlength="5000"></textarea>
+            </div>
             <button type="submit" class="send-btn" id="sendBtn" disabled>
               <span>📤</span>
             </button>
@@ -92,4 +113,5 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/chat.js"></script>
 </body>
+
 </html>

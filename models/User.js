@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://res.cloudinary.com/demo/image/upload/avatar-placeholder.png'
   },
+  bio: {
+    type: String,
+    maxlength: [150, 'Bio cannot exceed 150 characters'],
+    default: ''
+  },
   isOnline: {
     type: Boolean,
     default: false
@@ -42,11 +47,11 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -57,12 +62,12 @@ userSchema.pre('save', async function(next) {
 });
 
 // Method to compare passwords
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Remove password from JSON response
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;
   return user;

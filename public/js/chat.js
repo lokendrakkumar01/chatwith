@@ -42,6 +42,7 @@ const messageForm = document.getElementById('messageForm');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const logoutBtn = document.getElementById('logoutBtn');
+const settingsBtn = document.getElementById('settingsBtn');
 const userSearch = document.getElementById('userSearch');
 const typingIndicator = document.getElementById('typingIndicator');
 const loadMoreBtn = document.getElementById('loadMoreBtn');

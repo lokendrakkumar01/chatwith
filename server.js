@@ -10,6 +10,9 @@ const path = require('path');
 // Import routes
 const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/messages');
+const uploadRoutes = require('./routes/upload');
+const messageUploadRoutes = require('./routes/messageUpload');
+const profileRoutes = require('./routes/profile');
 
 // Import socket handler
 const initializeSocket = require('./socket/socketHandler');
@@ -69,6 +72,9 @@ initializeSocket(io);
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/messages', messageUploadRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
