@@ -118,4 +118,71 @@ router.get('/unread/count', auth, async (req, res) => {
       }
 });
 
+// @route   DELETE /api/messages/:messageId
+// @desc    Delete a specific message
+// @access  Private
+router.delete('/:messageId', auth, async (req, res) => {
+      try {
+            const { messageId } = req.params;
+
+            // Find message and verify ownership
+            const message = await Message.findOne({
+                  _id: messageId,
+                  senderId: req.userId
+            });
+
+            if (!message) {
+                  return res.status(404).json({
+                        success: false,
+                        message: 'Message not found or unauthorized'
+                  });
+            }
+
+            // Delete the message
+            await Message.findByIdAndDelete(messageId);
+
+            res.json({
+                  success: true,
+                  message: 'Message deleted successfully',
+                  messageId
+            });
+      } catch (error) {
+            console.error('Delete message error:', error);
+            res.status(500).json({
+                  success: false,
+                  message: 'Server error deleting message'
+            });
+      }
+});
+
+// @route   DELETE /api/messages/conversation/:userId
+// @desc    Clear entire conversation with a user
+// @access  Private
+router.delete('/conversation/:userId', auth, async (req, res) => {
+      try {
+            const { userId } = req.params;
+            const currentUserId = req.userId;
+
+            // Delete all messages between the two users
+            const result = await Message.deleteMany({
+                  $or: [
+                        { senderId: currentUserId, receiverId: userId },
+                        { senderId: userId, receiverId: currentUserId }
+                  ]
+            });
+
+            res.json({
+                  success: true,
+                  message: 'Conversation cleared successfully',
+                  deletedCount: result.deletedCount
+            });
+      } catch (error) {
+            console.error('Clear conversation error:', error);
+            res.status(500).json({
+                  success: false,
+                  message: 'Server error clearing conversation'
+            });
+      }
+});
+
 module.exports = router;

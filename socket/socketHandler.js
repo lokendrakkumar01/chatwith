@@ -171,6 +171,60 @@ const initializeSocket = (io) => {
                   }
             });
 
+            // Handle message deletion
+            socket.on('delete_message', async (data) => {
+                  try {
+                        const { messageId, receiverId } = data;
+
+                        // Verify ownership and delete
+                        const message = await Message.findOneAndDelete({
+                              _id: messageId,
+                              senderId: socket.userId
+                        });
+
+                        if (message) {
+                              // Notify sender
+                              socket.emit('message_deleted', { messageId });
+
+                              // Notify receiver if online
+                              const receiverSocketId = userSockets.get(receiverId);
+                              if (receiverSocketId) {
+                                    io.to(receiverSocketId).emit('message_deleted', { messageId });
+                              }
+                        }
+                  } catch (error) {
+                        console.error('Delete message error:', error);
+                        socket.emit('error', { message: 'Failed to delete message' });
+                  }
+            });
+
+            // Handle conversation clearing
+            socket.on('clear_conversation', async (data) => {
+                  try {
+                        const { userId } = data;
+
+                        // Delete all messages between users
+                        await Message.deleteMany({
+                              $or: [
+                                    { senderId: socket.userId, receiverId: userId },
+                                    { senderId: userId, receiverId: socket.userId }
+                              ]
+                        });
+
+                        // Notify sender
+                        socket.emit('conversation_cleared', { userId });
+
+                        // Notify other user if online
+                        const otherUserSocketId = userSockets.get(userId);
+                        if (otherUserSocketId) {
+                              io.to(otherUserSocketId).emit('conversation_cleared', { userId: socket.userId });
+                        }
+                  } catch (error) {
+                        console.error('Clear conversation error:', error);
+                        socket.emit('error', { message: 'Failed to clear conversation' });
+                  }
+            });
+
             // Handle message sent (for file uploads via API)
             socket.on('message_sent', async (messageData) => {
                   try {

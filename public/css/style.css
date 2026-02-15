@@ -754,6 +754,36 @@ body {
   font-size: 0.7rem;
 }
 
+/* Delete Message Button */
+.delete-message-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--transition);
+  color: #ff4444;
+}
+
+.message-bubble:hover .delete-message-btn {
+  opacity: 1;
+}
+
+.delete-message-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.message {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+
 .message-input-container {
   padding: var(--spacing-lg);
   background: var(--bg-dark);

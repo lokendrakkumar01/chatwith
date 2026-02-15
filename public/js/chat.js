@@ -219,6 +219,9 @@ function createMessageElement(msg) {
             }
       }
 
+      // Add delete button for sent messages
+      const deleteBtn = isSent ? `<button class="delete-message-btn" data-message-id="${msg._id || msg.messageId}" title="Delete message">🗑️</button>` : '';
+
       return `
     <div class="message ${messageClass}" data-message-id="${msg._id || msg.messageId}">
       <img src="${isSent ? currentUser.profileImage : (msg.senderId.profileImage || 'https://ui-avatars.com/api/?name=' + selectedUsername)}" alt="Avatar" class="avatar">
@@ -226,6 +229,7 @@ function createMessageElement(msg) {
         <div class="message-bubble">
           ${mediaHtml}
           ${msg.message ? escapeHtml(msg.message) : ''}
+          ${deleteBtn}
         </div>
         <div class="message-meta">
           <span class="message-time">${time}</span>
@@ -446,6 +450,71 @@ logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/';
+      }
+});
+
+// Delete Message Handler (Event Delegation)
+messages.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('delete-message-btn') || e.target.closest('.delete-message-btn')) {
+            const btn = e.target.classList.contains('delete-message-btn') ? e.target : e.target.closest('.delete-message-btn');
+            const messageId = btn.dataset.messageId;
+
+            if (confirm('Delete this message?')) {
+                  try {
+                        // Emit socket event for real-time deletion
+                        socket.emit('delete_message', {
+                              messageId,
+                              receiverId: selectedUserId
+                        });
+                  } catch (error) {
+                        console.error('Delete message error:', error);
+                        alert('Failed to delete message');
+                  }
+            }
+      }
+});
+
+// Clear Chat Handler
+const clearChatBtn = document.getElementById('clearChatBtn');
+if (clearChatBtn) {
+      clearChatBtn.addEventListener('click', async () => {
+            if (!selectedUserId) return;
+
+            if (confirm('Clear entire conversation? This cannot be undone.')) {
+                  try {
+                        // Emit socket event
+                        socket.emit('clear_conversation', {
+                              userId: selectedUserId
+                        });
+                  } catch (error) {
+                        console.error('Clear conversation error:', error);
+                        alert('Failed to clear conversation');
+                  }
+            }
+      });
+}
+
+// Socket Event - Message Deleted
+socket.on('message_deleted', (data) => {
+      const messageEl = document.querySelector(`[data-message-id="${data.messageId}"]`);
+      if (messageEl) {
+            messageEl.style.opacity = '0';
+            messageEl.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                  messageEl.remove();
+            }, 300);
+      }
+});
+
+// Socket Event - Conversation Cleared
+socket.on('conversation_cleared', (data) => {
+      if (data.userId === selectedUserId || !data.userId) {
+            messages.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Conversation cleared</p>';
+            setTimeout(() => {
+                  if (messages.innerHTML.includes('Conversation cleared')) {
+                        messages.innerHTML = '';
+                  }
+            }, 2000);
       }
 });
 
