@@ -171,6 +171,35 @@ const initializeSocket = (io) => {
                   }
             });
 
+            // Handle message sent (for file uploads via API)
+            socket.on('message_sent', async (messageData) => {
+                  try {
+                        const receiverId = messageData.receiverId._id || messageData.receiverId;
+                        const receiverSocketId = userSockets.get(receiverId);
+
+                        if (receiverSocketId) {
+                              // Update message status to delivered
+                              await Message.findByIdAndUpdate(messageData._id, {
+                                    status: 'delivered'
+                              });
+
+                              // Send to receiver
+                              io.to(receiverSocketId).emit('receive_message', {
+                                    ...messageData,
+                                    status: 'delivered'
+                              });
+
+                              // Notify sender about delivery
+                              socket.emit('message_delivered', {
+                                    messageId: messageData._id,
+                                    status: 'delivered'
+                              });
+                        }
+                  } catch (error) {
+                        console.error('Message sent broadcast error:', error);
+                  }
+            });
+
             // Handle disconnection
             socket.on('disconnect', async () => {
                   console.log(`User disconnected: ${socket.username} (${socket.userId})`);

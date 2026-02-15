@@ -208,11 +208,25 @@ function createMessageElement(msg) {
                   msg.status === 'delivered' ? '✓✓' : '✓'
       ) : '';
 
+      let mediaHtml = '';
+      if (msg.media && msg.media.url) {
+            if (msg.media.type === 'image') {
+                  mediaHtml = `<img src="${msg.media.url}" alt="${msg.media.fileName || 'Image'}" style="max-width: 300px; max-height: 300px; border-radius: 8px; margin-bottom: 8px; cursor: pointer;" onclick="window.open('${msg.media.url}', '_blank')">`;
+            } else if (msg.media.type === 'video') {
+                  mediaHtml = `<video controls style="max-width: 300px; max-height: 300px; border-radius: 8px; margin-bottom: 8px;"><source src="${msg.media.url}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            } else {
+                  mediaHtml = `<a href="${msg.media.url}" target="_blank" style="display: inline-block; padding: 8px 12px; background: rgba(255,255,255,0.1); border-radius: 6px; text-decoration: none; color: inherit; margin-bottom: 8px;">📎 ${msg.media.fileName || 'Download File'}</a>`;
+            }
+      }
+
       return `
     <div class="message ${messageClass}" data-message-id="${msg._id || msg.messageId}">
       <img src="${isSent ? currentUser.profileImage : (msg.senderId.profileImage || 'https://ui-avatars.com/api/?name=' + selectedUsername)}" alt="Avatar" class="avatar">
       <div class="message-content">
-        <div class="message-bubble">${escapeHtml(msg.message)}</div>
+        <div class="message-bubble">
+          ${mediaHtml}
+          ${msg.message ? escapeHtml(msg.message) : ''}
+        </div>
         <div class="message-meta">
           <span class="message-time">${time}</span>
           ${statusIcon ? `<span class="message-status">${statusIcon}</span>` : ''}
@@ -223,26 +237,73 @@ function createMessageElement(msg) {
 }
 
 // Send Message
-messageForm.addEventListener('submit', (e) => {
+messageForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const message = messageInput.value.trim();
 
-      if (!message || !selectedUserId) return;
+      if (!message && !selectedFile) return;
+      if (!selectedUserId) return;
 
-      // Emit message via socket
-      socket.emit('send_message', {
-            receiverId: selectedUserId,
-            message: message
-      });
+      // If there's a file attachment, use the upload API
+      if (selectedFile) {
+            try {
+                  const formData = new FormData();
+                  formData.append('file', selectedFile);
+                  formData.append('receiverId', selectedUserId);
+                  if (message) {
+                        formData.append('message', message);
+                  }
 
-      // Clear input
-      messageInput.value = '';
-      adjustTextareaHeight();
-      sendBtn.disabled = true;
+                  const response = await fetch(`${API_BASE}/api/messages/upload`, {
+                        method: 'POST',
+                        headers: {
+                              'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                  });
 
-      // Stop typing indicator
-      socket.emit('stop_typing', { receiverId: selectedUserId });
+                  const data = await response.json();
+
+                  if (data.success) {
+                        // Add message to UI
+                        const messageHtml = createMessageElement(data.data);
+                        messages.innerHTML += messageHtml;
+                        scrollToBottom();
+
+                        // Clear inputs
+                        messageInput.value = '';
+                        selectedFile = null;
+                        fileInput.value = '';
+                        filePreview.style.display = 'none';
+                        fileName.textContent = '';
+                        adjustTextareaHeight();
+                        sendBtn.disabled = true;
+
+                        // Emit via socket for real-time delivery
+                        socket.emit('message_sent', data.data);
+                  } else {
+                        alert(data.message || 'Failed to send message');
+                  }
+            } catch (error) {
+                  console.error('Send file error:', error);
+                  alert('Failed to send message. Please try again.');
+            }
+      } else {
+            // Text-only message via socket
+            socket.emit('send_message', {
+                  receiverId: selectedUserId,
+                  message: message
+            });
+
+            // Clear input
+            messageInput.value = '';
+            adjustTextareaHeight();
+            sendBtn.disabled = true;
+
+            // Stop typing indicator
+            socket.emit('stop_typing', { receiverId: selectedUserId });
+      }
 });
 
 // Enable/disable send button
@@ -398,6 +459,107 @@ socket.on('error', (error) => {
       console.error('Socket error:', error);
       alert(error.message || 'An error occurred');
 });
+
+// Profile Image Upload
+const avatarContainer = document.getElementById('avatarContainer');
+const profileImageInput = document.getElementById('profileImageInput');
+
+if (avatarContainer && profileImageInput) {
+      avatarContainer.addEventListener('click', () => {
+            profileImageInput.click();
+      });
+
+      profileImageInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                  alert('Please select an image file');
+                  return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                  alert('Image size should be less than 5MB');
+                  return;
+            }
+
+            try {
+                  const formData = new FormData();
+                  formData.append('profileImage', file);
+
+                  const response = await fetch(`${API_BASE}/api/upload/profile`, {
+                        method: 'POST',
+                        headers: {
+                              'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                  });
+
+                  const data = await response.json();
+
+                  if (data.success) {
+                        // Update UI
+                        currentUserAvatar.src = data.profileImage;
+
+                        // Update localStorage
+                        const user = JSON.parse(localStorage.getItem('user'));
+                        user.profileImage = data.profileImage;
+                        localStorage.setItem('user', JSON.stringify(user));
+
+                        alert('Profile photo updated successfully!');
+                  } else {
+                        alert(data.message || 'Failed to upload profile photo');
+                  }
+            } catch (error) {
+                  console.error('Profile upload error:', error);
+                  alert('Failed to upload profile photo. Please try again.');
+            }
+
+            // Reset input
+            profileImageInput.value = '';
+      });
+}
+
+// File Attachment for Messages
+const attachBtn = document.getElementById('attachBtn');
+const fileInput = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+const fileName = document.getElementById('fileName');
+const removeFile = document.getElementById('removeFile');
+let selectedFile = null;
+
+if (attachBtn && fileInput) {
+      attachBtn.addEventListener('click', () => {
+            fileInput.click();
+      });
+
+      fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file size (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                  alert('File size should be less than 10MB');
+                  fileInput.value = '';
+                  return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            filePreview.style.display = 'block';
+            sendBtn.disabled = false;
+      });
+
+      removeFile.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            fileName.textContent = '';
+            sendBtn.disabled = !messageInput.value.trim();
+      });
+}
 
 // Initialize App
 loadUsers();
