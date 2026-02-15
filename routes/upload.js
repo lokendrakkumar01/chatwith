@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { uploadImage } = require('../config/multer');
-const { uploadProfileImage } = require('../config/cloudinary');
+// Use local storage instead of Cloudinary
+const { uploadProfileImage } = require('../config/localStorage');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
@@ -17,7 +18,7 @@ router.post('/profile', auth, uploadImage.single('profileImage'), async (req, re
                   });
             }
 
-            // Upload to Cloudinary
+            // Upload to local storage
             const imageUrl = await uploadProfileImage(req.file.buffer);
 
             // Update user profile image
@@ -37,7 +38,8 @@ router.post('/profile', auth, uploadImage.single('profileImage'), async (req, re
             console.error('Profile upload error:', error);
             res.status(500).json({
                   success: false,
-                  message: 'Failed to upload profile image'
+                  message: 'Failed to upload profile image',
+                  error: error.message
             });
       }
 });

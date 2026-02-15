@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { uploadMedia } = require('../config/multer');
-const { uploadMessageMedia } = require('../config/cloudinary');
+// Use local storage instead of Cloudinary
+const { uploadMessageMedia } = require('../config/localStorage');
 const Message = require('../models/Message');
 const auth = require('../middleware/auth');
 
@@ -21,12 +22,16 @@ router.post('/upload', auth, uploadMedia.single('file'), async (req, res) => {
 
             let mediaData = null;
 
-            // Upload file to Cloudinary if present
+            // Upload file to local storage if present
             if (req.file) {
                   const resourceType = req.file.mimetype.startsWith('image/') ? 'image' :
                         req.file.mimetype.startsWith('video/') ? 'video' : 'raw';
 
-                  const uploadResult = await uploadMessageMedia(req.file.buffer, resourceType);
+                  const uploadResult = await uploadMessageMedia(
+                        req.file.buffer,
+                        resourceType,
+                        req.file.originalname
+                  );
 
                   mediaData = {
                         url: uploadResult.url,
@@ -60,7 +65,8 @@ router.post('/upload', auth, uploadMedia.single('file'), async (req, res) => {
             console.error('Message upload error:', error);
             res.status(500).json({
                   success: false,
-                  message: 'Failed to send message'
+                  message: 'Failed to send message',
+                  error: error.message
             });
       }
 });
