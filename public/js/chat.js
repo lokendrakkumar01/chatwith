@@ -51,6 +51,12 @@ const loadMoreBtn = document.getElementById('loadMoreBtn');
 currentUsername.textContent = currentUser.username || 'User';
 currentUserAvatar.src = currentUser.profileImage || 'https://ui-avatars.com/api/?name=' + (currentUser.username || 'User');
 
+// Enable/disable send button based on input
+messageInput.addEventListener('input', () => {
+      const hasText = messageInput.value.trim().length > 0;
+      sendBtn.disabled = !hasText;
+});
+
 // Socket Connection Events
 socket.on('connect', () => {
       console.log('✅ Connected to server');
